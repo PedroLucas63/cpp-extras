@@ -7,13 +7,17 @@ enable_testing()
 # Check if the platform is Windows
 if(WIN32)
     message(STATUS "Building on Windows. Disabling Curses.")
+    add_executable(fstring.exe source/fstring.cpp)
+    add_executable(interface.exe source/interface.cpp)
 else()
     find_package(Curses REQUIRED)
-    add_executable(interface tests/interface.cpp)
+    add_executable(fstring source/fstring.cpp)
+    add_executable(interface source/interface.cpp)
     target_link_libraries(interface ${CURSES_LIBRARIES})
 endif()
 
-add_executable(fstring tests/fstring.cpp)
+
+
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
