@@ -15,7 +15,9 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <stdexcept>
 #include <string_view>
+#include "ExplorerFunctions.hpp"
 
 /**
  * @brief Namespace 'ext' for external utilities and extensions.
@@ -32,24 +34,15 @@ namespace fs = std::filesystem;
  * files, and retrieve file information.
  */
 class FileHandler : public fs::path {
- public:
-   /**
-    * @enum FileType
-    * @brief Enumerates the types of files.
-    */
-   enum FileType {
-      NONE,      ///< No file type.
-      NOT_FOUND, ///< File not found.
-      REGULAR,   ///< Regular file.
-      DIRECTORY, ///< Directory.
-      SYMLINK,   ///< Symbolic link.
-      BLOCK,     ///< Block device file.
-      CHARACTER, ///< Character device file.
-      FIFO,      ///< Named pipe (FIFO).
-      SOCKET,    ///< Socket file.
-      UNKNOWN,   ///< Unknown file type.
-   };
+ private:
+   std::ios_base::openmode m_mode;
 
+   FileHandler &assign(fs::path const &path_) {
+      static_cast<fs::path &>(*this) = path_;
+      return *this;
+   }
+
+ public:
    /**
     * @enum RegularType
     * @brief Enumerates specific regular file types.
@@ -71,69 +64,72 @@ class FileHandler : public fs::path {
    };
 
    /**
-    * @brief Constructs a FileHandler object from a C-string path.
-    * @param path_ A C-string path to a file.
+    * @brief Default constructor for a FileHandler object.
     */
-   FileHandler(char const *path_) : fs::path(path_) {}
+   FileHandler() {}
 
    /**
-    * @brief Constructs a FileHandler object from a std::string path.
-    * @param path_ A std::string path to a file.
+    * @brief Constructs a FileHandler object from a path representation.
+    * @param path_ The path to a file, which can be a C-string, std::string, or
+    * std::string_view.
     */
-   FileHandler(std::string const &path_) : fs::path(path_) {}
+   FileHandler(fs::path const &path_,
+               std::ios_base::openmode mode_ = std::ios::out) {
+      if (fs::is_regular_file(path_) || !fs::exists(path_)) {
+         assign(path_);
+         m_mode = mode_;
+      } else {
+         throw std::invalid_argument(
+             "Cannot create a FileHandler from a directory path.");
+      }
+   }
+
+   FileHandler &operator=(fs::path const &path_) {
+      if (fs::is_regular_file(path_) || !fs::exists(path_)) {
+         assign(path_);
+         m_mode = std::ios::out;
+      } else {
+         throw std::invalid_argument(
+             "Cannot create a FileHandler from a directory path.");
+      }
+
+      return *this;
+   }
+
+   FileHandler &operator=(FileHandler const &path_) {
+      if (fs::is_regular_file(path_) || !fs::exists(path_)) {
+         assign(path_);
+         m_mode = path_.getMode();
+      } else {
+         throw std::invalid_argument(
+             "Cannot create a FileHandler from a directory path.");
+      }
+
+      return *this;
+   }
 
    /**
-    * @brief Constructs a FileHandler object from a std::string_view path.
-    * @param path_ A std::string_view path to a file.
+    * @brief Opens a file by assigning a new path to the FileHandler object.
+    * @param path_ The path to the file to open.
     */
-   FileHandler(std::string_view const &path_) : fs::path(path_) {}
+   void open(fs::path const &path_,
+             std::ios_base::openmode mode_ = std::ios::out) {
+      if (fs::is_regular_file(path_) || !fs::exists(path_)) {
+         assign(path_);
+         m_mode = mode_;
+      } else {
+         throw std::invalid_argument(
+             "Cannot create a FileHandler from a directory path.");
+      }
+   }
 
    /**
-    * @brief Check if the file exists.
+    * @brief Checks if the file exists.
     * @return True if the file exists, false otherwise.
     */
    bool exists() const { return fs::exists(*this); }
 
-   /**
-    * @brief Get the type of the file.
-    * @return The FileType of the file.
-    */
-   FileType getType() const {
-      fs::file_status stt{fs::status(*this)};
-
-      switch (stt.type()) {
-      case fs::file_type::none:
-         return NONE;
-         break;
-      case fs::file_type::not_found:
-         return NOT_FOUND;
-         break;
-      case fs::file_type::regular:
-         return REGULAR;
-         break;
-      case fs::file_type::directory:
-         return DIRECTORY;
-         break;
-      case fs::file_type::symlink:
-         return SYMLINK;
-         break;
-      case fs::file_type::block:
-         return BLOCK;
-         break;
-      case fs::file_type::character:
-         return CHARACTER;
-         break;
-      case fs::file_type::fifo:
-         return FIFO;
-         break;
-      case fs::file_type::socket:
-         return SOCKET;
-         break;
-      default:
-         return UNKNOWN;
-         break;
-      }
-   }
+   std::ios_base::openmode getMode() const { return m_mode; }
 
    /**
     * @brief Check if the file is a document.
@@ -425,10 +421,6 @@ class FileHandler : public fs::path {
     * regular.
     */
    RegularType getRegularType() const {
-      if (getType() != REGULAR) {
-         return UNCHARTED;
-      }
-
       if (isDocument()) {
          return DOCUMENT;
       } else if (isSheet()) {
@@ -462,9 +454,9 @@ class FileHandler : public fs::path {
     * @brief Get the base name of the file (file name without extension).
     * @return The base name of the file.
     */
-   std::string baseName() const {
-      std::string name{this->filename()};
-      std::string ext{this->extension()};
+   std::string basename() const {
+      std::string name(this->filename());
+      std::string ext(this->extension());
 
       return name.erase(name.size() - ext.size());
    }
@@ -503,34 +495,6 @@ class FileHandler : public fs::path {
    }
 
    /**
-    * @brief Get the file's permissions as a string.
-    * @return A string representing the file's permissions in the form
-    * "rwxrwxrwx".
-    */
-   std::string permissions() const {
-      std::string perms_str;
-
-      using std::filesystem::perms;
-      perms p{fs::status(*this).permissions()};
-
-      auto show = [=](std::string &str, char op, perms perm) {
-         str.push_back(perms::none == (perm & p) ? '-' : op);
-      };
-
-      show(perms_str, 'r', perms::owner_read);
-      show(perms_str, 'w', perms::owner_write);
-      show(perms_str, 'x', perms::owner_exec);
-      show(perms_str, 'r', perms::group_read);
-      show(perms_str, 'w', perms::group_write);
-      show(perms_str, 'x', perms::group_exec);
-      show(perms_str, 'r', perms::others_read);
-      show(perms_str, 'w', perms::others_write);
-      show(perms_str, 'x', perms::others_exec);
-
-      return perms_str;
-   }
-
-   /**
     * @brief Remove the file from the filesystem.
     */
    void remove() { fs::remove(*this); }
@@ -547,7 +511,7 @@ class FileHandler : public fs::path {
       }
 
       fs::rename(*this, new_name_);
-      *this = new_name_;
+      *this = {new_name_, m_mode};
 
       return true;
    }

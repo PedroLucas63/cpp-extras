@@ -6,18 +6,19 @@ enable_testing()
 
 # Check if the platform is Windows
 if(WIN32)
+    set(CMAKE_CXX_COMPILER "C:/mingw64/bin")
     message(STATUS "Building on Windows. Disabling Curses.")
     add_executable(fstring.exe source/fstring.cpp)
     add_executable(interface.exe source/interface.cpp)
+    add_executable(explorer.exe source/explorer.cpp)
 else()
     find_package(Curses REQUIRED)
     add_executable(fstring source/fstring.cpp)
     add_executable(interface source/interface.cpp)
+    add_executable(explorer source/explorer.cpp)
     target_link_libraries(interface ${CURSES_LIBRARIES})
+    target_link_libraries(explorer ${CURSES_LIBRARIES})
 endif()
-
-
-
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
