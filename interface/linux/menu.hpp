@@ -117,7 +117,7 @@ class menu {
    /**
     * @brief Selects the currently highlighted option.
     */
-   void select() { m_selected = m_index_options; }
+   void select() { m_selected = m_options[m_index_options].first; }
 
    /**
     * @brief Retrieves the title of the menu.
