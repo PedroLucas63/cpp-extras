@@ -40,6 +40,7 @@ class menu {
        m_options;          /**< List of menu options. */
    size_t m_index_options; /**< Index of the currently selected option. */
    int m_selected;         /**< Index of the selected option. */
+   bool m_stop;
 
  public:
    /**
@@ -50,7 +51,7 @@ class menu {
     */
    menu(std::string title_ = "",
         std::initializer_list<std::pair<int, std::string>> list_ = {})
-       : m_title(title_), m_options(list_), m_index_options(0), m_selected(-1) {
+       : m_title(title_), m_options(list_), m_index_options(0), m_selected(-1), m_stop(false) {
       HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
       CONSOLE_CURSOR_INFO info;
       info.dwSize = 100;
@@ -64,7 +65,7 @@ class menu {
     * @param list_ List of menu options as a pair of (reference, label).
     */
    menu(std::initializer_list<std::pair<int, std::string>> list_ = {})
-       : m_options(list_), m_index_options(0), m_selected(-1) {
+       : m_options(list_), m_index_options(0), m_selected(-1), m_stop(false) {
       HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
       CONSOLE_CURSOR_INFO info;
       info.dwSize = 100;
@@ -127,7 +128,7 @@ class menu {
    /**
     * @brief Selects the currently highlighted option.
     */
-   void select() { m_selected = m_options[m_index_options].first; }
+   void select() { m_selected = m_options[m_index_options].first; m_stop = true; }
 
    /**
     * @brief Retrieves the title of the menu.
@@ -164,7 +165,7 @@ class menu {
     *
     * @return True if an option has been selected, false otherwise.
     */
-   bool exit() const { return m_selected != -1; }
+   bool exit() const { return m_stop; }
 
    /**
     * @brief Resets the menu to its initial state.
@@ -174,6 +175,7 @@ class menu {
    void reset() {
       m_index_options = 0;
       m_selected = -1;
+      m_stop = false;
    }
 };
 } // namespace ext
