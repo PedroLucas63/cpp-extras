@@ -84,10 +84,20 @@ class FileHandler : public fs::path {
       }
    }
 
-   FileHandler &operator=(fs::path const &path_) {
-      if (fs::is_regular_file(path_) || !fs::exists(path_)) {
-         assign(path_);
-         m_mode = std::ios::out;
+   FileHandler(FileHandler const &other_) {
+      if (fs::is_regular_file(other_) || !fs::exists(other_)) {
+         assign(other_);
+         m_mode = other_.getMode();
+      } else {
+         throw std::invalid_argument(
+             "Cannot create a FileHandler from a directory path.");
+      }
+   }
+
+   FileHandler &operator=(FileHandler const &rhs_) {
+      if (fs::is_regular_file(rhs_) || !fs::exists(rhs_)) {
+         assign(rhs_);
+         m_mode = rhs_.getMode();
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
@@ -96,10 +106,10 @@ class FileHandler : public fs::path {
       return *this;
    }
 
-   FileHandler &operator=(FileHandler const &path_) {
-      if (fs::is_regular_file(path_) || !fs::exists(path_)) {
-         assign(path_);
-         m_mode = path_.getMode();
+   FileHandler &operator=(fs::path const &rhs_) {
+      if (fs::is_regular_file(rhs_) || !fs::exists(rhs_)) {
+         assign(rhs_);
+         m_mode = std::ios::out;
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
