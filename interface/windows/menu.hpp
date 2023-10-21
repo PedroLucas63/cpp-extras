@@ -40,7 +40,7 @@ class menu {
        m_options;          /**< List of menu options. */
    size_t m_index_options; /**< Index of the currently selected option. */
    int m_selected;         /**< Index of the selected option. */
-   bool m_stop;
+   bool m_stop;            /**< Boolean to stop program */
 
  public:
    /**
@@ -51,7 +51,8 @@ class menu {
     */
    menu(std::string title_ = "",
         std::initializer_list<std::pair<int, std::string>> list_ = {})
-       : m_title(title_), m_options(list_), m_index_options(0), m_selected(-1), m_stop(false) {
+       : m_title(title_), m_options(list_), m_index_options(0), m_selected(-1),
+         m_stop(false) {
       HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
       CONSOLE_CURSOR_INFO info;
       info.dwSize = 100;
@@ -128,7 +129,10 @@ class menu {
    /**
     * @brief Selects the currently highlighted option.
     */
-   void select() { m_selected = m_options[m_index_options].first; m_stop = true; }
+   void select() {
+      m_selected = m_options[m_index_options].first;
+      m_stop = true;
+   }
 
    /**
     * @brief Retrieves the title of the menu.
