@@ -216,7 +216,7 @@ class Explorer : public fs::directory_entry {
          return false;
       }
 
-      std::ofstream file{file_, file_.getMode()};
+      std::ofstream file{file_.generic_string(), file_.getMode()};
       file.close();
 
       return true;

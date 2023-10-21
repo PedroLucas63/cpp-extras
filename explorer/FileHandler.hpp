@@ -455,8 +455,8 @@ class FileHandler : public fs::path {
     * @return The base name of the file.
     */
    std::string basename() const {
-      std::string name(this->filename());
-      std::string ext(this->extension());
+      std::string name(this->filename().generic_string());
+      std::string ext(this->extension().generic_string());
 
       return name.erase(name.size() - ext.size());
    }
@@ -466,8 +466,8 @@ class FileHandler : public fs::path {
     * @return The directory path of the file.
     */
    std::string directoryPath() const {
-      std::string full{*this};
-      std::string name{this->filename()};
+      std::string full{this->generic_string()};
+      std::string name{this->filename().generic_string()};
 
       return full.erase(full.size() - name.size());
    }
@@ -527,7 +527,7 @@ class FileHandler : public fs::path {
          return;
       }
 
-      std::ofstream file(*this, mode_);
+      std::ofstream file(this->generic_string(), mode_);
 
       if (!file) {
          return;
@@ -555,7 +555,7 @@ class FileHandler : public fs::path {
          return;
       }
 
-      std::ifstream file(*this, mode_);
+      std::ifstream file(this->generic_string(), mode_);
 
       if (!file) {
          return;
