@@ -20,6 +20,16 @@
 
 namespace ext {
 
+/**
+ * @brief Vertical Menu Class
+ *
+ * The `vmenu` class is a specialized subclass of the menu class, designed to create and manage
+ * vertical menus in a Windows environment. It facilitates the rendering of menu options, user
+ * navigation, and selection of options within a vertical layout. This class simplifies the
+ * development of interactive vertical menus for Windows-based applications.
+ *
+ * @see menu
+ */
 class vmenu : public menu {
  public:
    /**

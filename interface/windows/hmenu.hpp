@@ -23,6 +23,21 @@
  */
 namespace ext {
 
+/**
+ * @brief Horizontal Menu Class for Windows
+ *
+ * The `hmenu` class is a specialized subclass of the menu class, designed for creating and managing horizontal menus in a Windows environment using the ncurses library. It provides functionality for rendering horizontal menu options, user navigation, and selection of options within a horizontal layout.
+ *
+ * Key Features:
+ * - Create horizontal menus with titles and a list of options.
+ * - Utilizes the ncurses library for rendering and interaction.
+ * - Navigation using arrow keys (LEFT and RIGHT) to highlight options.
+ * - Option selection using the ENTER key.
+ *
+ * The `hmenu` class simplifies the development of interactive horizontal menus in a Windows environment and is suitable for console-based applications.
+ *
+ * @see menu
+ */
 class hmenu : public menu {
  public:
    /**

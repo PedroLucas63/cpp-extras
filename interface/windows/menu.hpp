@@ -33,6 +33,21 @@ inline constexpr short DOWN{80};     /**< Constant for the Down arrow key. */
 inline constexpr short LEFT{75};     /**< Constant for the Left arrow key. */
 inline constexpr short RIGHT{77};    /**< Constant for the Right arrow key. */
 
+/**
+ * @brief Menu Base Class for Windows
+ *
+ * The `menu` class is a foundational class designed for creating and managing text-based menus in a Windows environment. It provides essential functionality for displaying menu options, navigating through options, and making selections. This class is intended to serve as a base for more specialized menu implementations, such as vertical menus.
+ *
+ * Key Features:
+ * - Define and manage a list of menu options with labels and references.
+ * - Support for menu titles, including the ability to set or change the title.
+ * - Navigation using arrow keys (UP and DOWN) to highlight options.
+ * - Option selection using the ENTER key.
+ * - Resetting the menu to its initial state after selection.
+ *
+ * The `menu` class simplifies the development of interactive menus and is suitable for various console-based applications.
+ *
+ */
 class menu {
  private:
    std::string m_title; /**< Title of the menu. */
