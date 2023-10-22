@@ -79,6 +79,15 @@ class Explorer : public fs::directory_entry {
       return true;
    }
 
+   bool copy(Explorer const& destiny_) {
+      if (destiny_.exists()) {
+         return false;
+      }
+
+      fs::copy(*this, destiny_);
+      return true;
+   }
+
    std::uintmax_t capacity() const {
       if (!this->exists()) {
          return 0;
@@ -198,7 +207,10 @@ class Explorer : public fs::directory_entry {
          return false;
       }
 
-      fs::create_directory(folder_);
+      fs::path root = fs::path(*this);
+      fs::path dir = fs::path(folder_);
+      fs::path folder = root.generic_string() + "/" + dir.generic_string();
+      fs::create_directory(folder);
       return true;
    }
 
@@ -211,18 +223,30 @@ class Explorer : public fs::directory_entry {
       return true;
    }
 
+   bool copyDirectory(Explorer const &folder_, Explorer const &destiny_) const {
+      if (destiny_.exists()) {
+         return false;
+      }
+
+      fs::copy(folder_, destiny_);
+      return true;
+   }
+
    bool createFile(FileHandler const &file_) const {
       if (file_.exists()) {
          return false;
       }
 
-      std::ofstream file{file_.generic_string(), file_.getMode()};
+      fs::path root = fs::path(*this);
+      fs::path file_path = root.generic_string() + "/" + file_.generic_string();
+
+      std::ofstream file{file_path.generic_string(), std::ios::out | file_.getMode()};
       file.close();
 
       return true;
    }
 
-   bool copy(FileHandler const &file_, FileHandler const &destiny_) const {
+   bool copyFile(FileHandler const &file_, FileHandler const &destiny_) const {
       if (destiny_.exists()) {
          return false;
       }

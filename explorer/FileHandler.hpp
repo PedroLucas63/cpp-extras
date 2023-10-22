@@ -12,12 +12,14 @@
 #ifndef FILE_HANDLER_HPP_
 #define FILE_HANDLER_HPP_
 
+#include "ExplorerFunctions.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
 #include <string_view>
-#include "ExplorerFunctions.hpp"
+#include <vector>
+#include <bitset>
 
 /**
  * @brief Namespace 'ext' for external utilities and extensions.
@@ -524,67 +526,6 @@ class FileHandler : public fs::path {
       *this = {new_name_, m_mode};
 
       return true;
-   }
-
-   /**
-    * @brief Write data to the file.
-    * @param input_ The data to be written to the file.
-    * @param mode_ The open mode for the file (default is std::ios::out).
-    */
-   void write(std::string const &input_,
-              std::ios_base::openmode mode_ = std::ios::out) {
-      if (!exists()) {
-         return;
-      }
-
-      std::ofstream file(this->generic_string(), mode_);
-
-      if (!file) {
-         return;
-      }
-
-      char *str = new char[input_.size()];
-      size_t i = 0;
-      for (char a : input_) {
-         str[i++] = a;
-      }
-
-      file.write(str, input_.size());
-      delete[] str;
-      file.close();
-   }
-
-   /**
-    * @brief Read data from the file.
-    * @param output_ The data read from the file.
-    * @param mode_ The open mode for the file (default is std::ios::in).
-    */
-   void read(std::string &output_,
-             std::ios_base::openmode mode_ = std::ios_base::in) {
-      if (!exists()) {
-         return;
-      }
-
-      std::ifstream file(this->generic_string(), mode_);
-
-      if (!file) {
-         return;
-      }
-
-      file.seekg(0, std::ios::end);
-      size_t output_size = file.tellg();
-      file.seekg(0, std::ios::beg);
-
-      char *str = new char[output_size];
-
-      file.read(str, output_size);
-
-      for (size_t i = 0; i < output_size; i++) {
-         output_.push_back(str[i]);
-      }
-
-      delete[] str;
-      file.close();
    }
 };
 } // namespace ext
