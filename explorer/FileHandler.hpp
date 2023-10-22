@@ -13,13 +13,13 @@
 #define FILE_HANDLER_HPP_
 
 #include "ExplorerFunctions.hpp"
+#include <bitset>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
 #include <string_view>
 #include <vector>
-#include <bitset>
 
 /**
  * @brief Namespace 'ext' for external utilities and extensions.
@@ -37,8 +37,12 @@ namespace fs = std::filesystem;
  */
 class FileHandler : public fs::path {
  private:
-   std::ios_base::openmode m_mode;
-
+   /**
+    * @brief Assigns the value of a path to the FileHandler object.
+    *
+    * @param path_ The path to assign to the FileHandler object.
+    * @return A reference to the modified FileHandler object.
+    */
    FileHandler &assign(fs::path const &path_) {
       static_cast<fs::path &>(*this) = path_;
       return *this;
@@ -72,34 +76,48 @@ class FileHandler : public fs::path {
 
    /**
     * @brief Constructs a FileHandler object from a path representation.
+    *
     * @param path_ The path to a file, which can be a C-string, std::string, or
     * std::string_view.
+    * @throw std::invalid_argument if the path is a directory or if it doesn't
+    * exist.
     */
-   FileHandler(fs::path const &path_,
-               std::ios_base::openmode mode_ = std::ios::out) {
+   FileHandler(fs::path const &path_) {
       if (fs::is_regular_file(path_) || !fs::exists(path_)) {
          assign(path_);
-         m_mode = mode_;
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
       }
    }
 
+   /**
+    * @brief Copy constructor for a FileHandler object.
+    *
+    * @param other_ The FileHandler object to copy.
+    * @throw std::invalid_argument if the other object is a directory or if it
+    * doesn't exist.
+    */
    FileHandler(FileHandler const &other_) {
       if (fs::is_regular_file(other_) || !fs::exists(other_)) {
          assign(other_);
-         m_mode = other_.getMode();
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
       }
    }
 
+   /**
+    * @brief Copy assignment operator for a FileHandler object.
+    *
+    * @param rhs_ The FileHandler object to assign to this object.
+    * @throw std::invalid_argument if the rhs object is a directory or if it
+    * doesn't exist.
+    * @return A reference to the modified FileHandler object.
+    */
    FileHandler &operator=(FileHandler const &rhs_) {
       if (fs::is_regular_file(rhs_) || !fs::exists(rhs_)) {
          assign(rhs_);
-         m_mode = rhs_.getMode();
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
@@ -108,10 +126,17 @@ class FileHandler : public fs::path {
       return *this;
    }
 
+   /**
+    * @brief Assignment operator to assign a path to the FileHandler object.
+    *
+    * @param rhs_ The path to assign to the FileHandler object.
+    * @throw std::invalid_argument if the path is a directory or if it doesn't
+    * exist.
+    * @return A reference to the modified FileHandler object.
+    */
    FileHandler &operator=(fs::path const &rhs_) {
       if (fs::is_regular_file(rhs_) || !fs::exists(rhs_)) {
          assign(rhs_);
-         m_mode = std::ios::out;
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
@@ -124,11 +149,9 @@ class FileHandler : public fs::path {
     * @brief Opens a file by assigning a new path to the FileHandler object.
     * @param path_ The path to the file to open.
     */
-   void open(fs::path const &path_,
-             std::ios_base::openmode mode_ = std::ios::out) {
+   void open(fs::path const &path_) {
       if (fs::is_regular_file(path_) || !fs::exists(path_)) {
          assign(path_);
-         m_mode = mode_;
       } else {
          throw std::invalid_argument(
              "Cannot create a FileHandler from a directory path.");
@@ -140,8 +163,6 @@ class FileHandler : public fs::path {
     * @return True if the file exists, false otherwise.
     */
    bool exists() const { return fs::exists(*this); }
-
-   std::ios_base::openmode getMode() const { return m_mode; }
 
    /**
     * @brief Check if the file is a document.
@@ -523,7 +544,7 @@ class FileHandler : public fs::path {
       }
 
       fs::rename(*this, new_name_);
-      *this = {new_name_, m_mode};
+      assign(new_name_);
 
       return true;
    }
